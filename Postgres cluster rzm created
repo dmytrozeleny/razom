@@ -1,0 +1,8 @@
+Postgres cluster rzm created
+  Username:    postgres
+  Password:    w5MkULrRIquRYlh
+  Hostname:    rzm.internal
+  Flycast:     fdaa:1:d639:0:1::2
+  Proxy port:  5432
+  Postgres port:  5433
+  Connection string: postgres://postgres:w5MkULrRIquRYlh@rzm.flycast:5432
