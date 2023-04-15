@@ -16,7 +16,7 @@
   <script>
     var lat = parseFloat('{{ lat }}');
     var lon = parseFloat('{{ lon }}');
-    var route = JSON.parse('{{ route }}');
+    var route = '{{ route }}';
     var shortDescription = '{{ short_description }}';
     var startTime = '{{ start_time }}';
     var estimatedDuration = '{{ estimated_duration }}';
@@ -27,20 +27,20 @@
       attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
       maxZoom: 18,
     }).addTo(map);
-
+    
     // Add marker to the map
     L.marker([lat, lon]).addTo(map);
 
     // Add route to the map
     if (route.length > 0) {
-      var polyline = L.polyline(route).addTo(map);
+      var polyline = L.polyline(JSON.parse(route)).addTo(map);
       map.fitBounds(polyline.getBounds());
     }
-
     // Display Marker details
     document.getElementById('short_description').innerHTML = shortDescription;
     document.getElementById('start_time').innerHTML = startTime;
     document.getElementById('estimated_duration').innerHTML = estimatedDuration;
+
   </script>
 </body>
 </html>

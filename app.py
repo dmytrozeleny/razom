@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify, request, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql.expression import func
+
 
 app = Flask(__name__)
 
@@ -19,6 +21,11 @@ class Marker(db.Model):
     start_at = db.Column(db.DateTime(timezone=True), nullable=False)
     short_description = db.Column(db.String(100), nullable=False)
 
+def get_route(marker):
+    lat_lon_pairs = zip(marker.route_lat, marker.route_lon)
+    route = [[float(lat), float(lon)] for lat, lon in lat_lon_pairs]
+    return route
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -31,9 +38,9 @@ def get_markers():
             sw_lat, sw_lon = boundaries['sw_lat'], boundaries['sw_lon']
             ne_lat, ne_lon = boundaries['ne_lat'], boundaries['ne_lon']
             markers = Marker.query.filter(Marker.start_lat >= sw_lat, Marker.start_lat <= ne_lat,
-                                          Marker.start_lon >= sw_lon, Marker.start_lon <= ne_lon).limit(10).all()
+                                          Marker.start_lon >= sw_lon, Marker.start_lon <= ne_lon).order_by(func.random()).limit(10).all()
         else:
-            markers = Marker.query.limit(10).all()
+            markers = Marker.query.order_by(func.random()).limit(10).all()
         return jsonify({'markers': [{'id' : marker.id,
                                      'title': marker.activity_type,
                                      'lat': marker.start_lat,
@@ -44,7 +51,7 @@ def get_markers():
                                      'details_url': url_for('marker_details', marker_id=marker.id)
                                      } for marker in markers]})
     else:
-        markers = Marker.query.limit(10).all()
+        markers = Marker.query.order_by(func.random()).limit(10).all()
         return jsonify({'markers': [{'id' : marker.id,
                                      'title': marker.activity_type,
                                      'lat': marker.start_lat,
@@ -60,11 +67,15 @@ def marker_details(marker_id):
     # Get Marker data from the database using marker_id
     marker = Marker.query.filter_by(id=marker_id).first()
 
+    # Get route from Marker data
+    route = get_route(marker)
+    print(route)
+
     # Render HTML template with Marker data
     return render_template('marker_details.html',
                            lat=marker.start_lat,
                            lon=marker.start_lon,
-                           route=marker.route,
+                           route=route,
                            short_description=marker.short_description,
                            start_time=marker.start_at.strftime('%Y-%m-%d %H:%M:%S'),
                            estimated_duration=marker.estimated_duration_minutes)
