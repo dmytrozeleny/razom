@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -34,26 +34,40 @@ def get_markers():
                                           Marker.start_lon >= sw_lon, Marker.start_lon <= ne_lon).limit(10).all()
         else:
             markers = Marker.query.limit(10).all()
-        return jsonify({'markers': [{'title': marker.activity_type,
+        return jsonify({'markers': [{'id' : marker.id,
+                                     'title': marker.activity_type,
                                      'lat': marker.start_lat,
                                      'lon': marker.start_lon,
                                      'short_description':marker.short_description,
                                      'start_at':marker.start_at,
-                                     'estimated_duration_minutes':marker.estimated_duration_minutes
+                                     'estimated_duration_minutes':marker.estimated_duration_minutes,
+                                     'details_url': url_for('marker_details', marker_id=marker.id)
                                      } for marker in markers]})
     else:
         markers = Marker.query.limit(10).all()
-        return jsonify({'markers': [{'title': marker.activity_type,
+        return jsonify({'markers': [{'id' : marker.id,
+                                     'title': marker.activity_type,
                                      'lat': marker.start_lat,
                                      'lon': marker.start_lon,
                                      'short_description':marker.short_description,
                                      'start_at':marker.start_at,
-                                     'estimated_duration_minutes':marker.estimated_duration_minutes
+                                     'estimated_duration_minutes':marker.estimated_duration_minutes,
+                                     'details_url': url_for('marker_details', marker_id=marker.id)
                                      } for marker in markers]})
     
-@app.route('/event_details/<event_id>')
-def about():
-  return render_template("about.html")
+@app.route('/marker_details/<int:marker_id>')
+def marker_details(marker_id):
+    # Get Marker data from the database using marker_id
+    marker = Marker.query.filter_by(id=marker_id).first()
+
+    # Render HTML template with Marker data
+    return render_template('marker_details.html',
+                           lat=marker.start_lat,
+                           lon=marker.start_lon,
+                           route=marker.route,
+                           short_description=marker.short_description,
+                           start_time=marker.start_at.strftime('%Y-%m-%d %H:%M:%S'),
+                           estimated_duration=marker.estimated_duration_minutes)
 
 
 if __name__ == '__main__':
