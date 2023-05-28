@@ -1,10 +1,13 @@
 from flask import Flask, render_template, jsonify, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.expression import func
+import os
+
+database_url = os.getenv('DATABASE_URL')
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:w5MkULrRIquRYlh@localhost:5432/razom_db"
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://', 1)
 db = SQLAlchemy(app)
 
 class Marker(db.Model):
@@ -101,5 +104,6 @@ def marker_details(marker_id):
                            )
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=5000)

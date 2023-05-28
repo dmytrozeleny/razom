@@ -1,0 +1,5 @@
+Flask==2.2.3
+flask_sqlalchemy==3.0.3
+SQLAlchemy==1.4.32
+psycopg2-binary
+waitress
