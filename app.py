@@ -50,7 +50,7 @@ def generate_output(markers):
                                  'start_at':marker['start_at'],
                                  'estimated_duration_minutes':marker['estimated_duration_minutes'],
                                  'created_by':marker['created_by'],
-                                 'details_url': 'details_url'
+                                 'details_url': url_for('marker_details', marker_id=marker['id'])
                                  } for marker in markers]})
 
 def markers_to_dict(markers):
@@ -61,8 +61,7 @@ def markers_to_dict(markers):
                                  'short_description':marker.short_description,
                                  'start_at':marker.start_at,
                                  'estimated_duration_minutes':marker.estimated_duration_minutes,
-                                 'created_by':marker.creator.first_name + ' ' + marker.creator.last_name,
-                                 'details_url': url_for('marker_details', marker_id=marker.id)
+                                 'created_by':marker.creator.first_name + ' ' + marker.creator.last_name
                                  } for marker in markers]
 
 
