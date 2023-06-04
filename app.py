@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 app.secret_key = get_random_string(12)
 # app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:w5MkULrRIquRYlh@localhost:5432/razom_db"
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:w5MkULrRIquRYlh@localhost:5432/razom_db"
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://', 1)
 db = SQLAlchemy(app)
 
 class Marker(db.Model):
