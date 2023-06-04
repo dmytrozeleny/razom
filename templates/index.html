@@ -35,70 +35,72 @@
 
     var swLat = bounds._southWest.lat;
     var swLon = bounds._southWest.lng;
-
+    var zoom = map.getZoom()
     var boundaries = {
       'ne_lat' : neLat,
       'ne_lon' : neLon,
       'sw_lat' : swLat,
       'sw_lon' : swLon,
+      'zoom' : zoom,
       }
-    console.log('initial bounds', boundaries)
-    // Function to update markers
-  
+
     function updateMarkers() {
-  $.ajax({
-    type: 'POST',
-    url: '/markers',
-    contentType: 'application/json',
-    data: JSON.stringify(boundaries),
-    success: function(data) {
-      var markers = data.markers;
-      map.eachLayer(function(layer) {
-        if (layer instanceof L.Marker) {
-          map.removeLayer(layer);
+      $.ajax({
+        type: 'POST',
+        url: '/markers',
+        contentType: 'application/json',
+        data: JSON.stringify(boundaries),
+        success: function(data) {
+          var markers = data.markers;
+          map.eachLayer(function(layer) {
+            if (layer instanceof L.Marker) {
+              map.removeLayer(layer);
+            }
+          });
+          if (markers.length > 0) {
+            for (var i = 0; i < Math.min(markers.length, 10); i++) {
+              var marker = markers[i];
+              L.marker([marker.lat, marker.lon]).addTo(map).bindPopup(
+                "<b>" + marker.title + "</b><br>" + 
+                "Description: " + marker.short_description + "<br>" +
+                "Starts at: " + marker.start_at + "<br>" +
+                "Estimated duration: " + marker.estimated_duration_minutes + " minutes" + "<br>" +
+                "Created by: " + marker.created_by + "<br>" +
+                "<a href='" + marker.details_url + "'>More details</a>"
+              );
+            }
+          }
+        },
+        error: function(error) {
+          console.log(error);
         }
       });
-      if (markers.length > 0) {
-        for (var i = 0; i < Math.min(markers.length, 10); i++) {
-          var marker = markers[i];
-          L.marker([marker.lat, marker.lon]).addTo(map).bindPopup(
-                  "<b>" + marker.title + "</b><br>" + 
-                  "Description: " + marker.short_description + "<br>" +
-                  "Starts at: " + marker.start_at + "<br>" +
-                  "Estimated duration: " + marker.estimated_duration_minutes + " minutes" + "<br>" +
-                  "Created by: " + marker.created_by + "<br>" +
-                  "<a href='" + marker.details_url + "'>More details</a>"
-                  );
-        }
-      }
-    },
-    error: function(error) {
-      console.log(error);
-    }
-  });
-} 
+    } 
   
     // Add markers initially
     updateMarkers();
     console.log('initial placement')
 
-    // Update markers when map is moved or zoomed
-    map.on('moveend', function() {
-      bounds = map.getBounds();
-      neLat = bounds._northEast.lat;
-      neLon = bounds._northEast.lng;
-      swLat = bounds._southWest.lat;
-      swLon = bounds._southWest.lng;
-       boundaries = {
-      'ne_lat' : neLat,
-      'ne_lon' : neLon,
-      'sw_lat' : swLat,
-      'sw_lon' : swLon,
-      }
-      console.log(boundaries)
+    // Update markers, boundaries, and zoom level when map is moved or zoomed
+    function updateBoundsAndMarkers() {
+      var bounds = map.getBounds();
+      var neLat = bounds._northEast.lat;
+      var neLon = bounds._northEast.lng;
+      var swLat = bounds._southWest.lat;
+      var swLon = bounds._southWest.lng;
+      var zoom = map.getZoom();
+      boundaries = {
+        'ne_lat': neLat,
+        'ne_lon': neLon,
+        'sw_lat': swLat,
+        'sw_lon': swLon,
+        'zoom': zoom
+      };
       updateMarkers();
-      console.log('map moved, markers updated')
-    });
+    }
+
+    map.on('moveend', updateBoundsAndMarkers);
+    // map.on('zoomend', updateBoundsAndMarkers);
   </script>
 </body>
 </html>
