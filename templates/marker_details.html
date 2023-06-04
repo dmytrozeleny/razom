@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Marker Details</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js"></script>
+</head>
+<body>
+  <h1>Marker Details</h1>
+  <h2>Short Description: <span id="short_description"></span></h2>
+  <h2>Start Time: <span id="start_time"></span></h2>
+  <h2>Estimated Duration: <span id="estimated_duration"></span> minutes</h2>
+
+  <h2>Participants:</h2>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Phone</th>
+      <th>Email</th>
+    </tr>
+    {% for index in range(participant_names|length) %}
+    <tr>
+      <td>{{ participant_names[index] }}</td>
+      <td>{{ participant_phones[index] }}</td>
+      <td>{{ participant_emails[index] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div id="map" style="height: 500px;"></div>
+
+  <script>
+    var lat = parseFloat('{{ lat }}');
+    var lon = parseFloat('{{ lon }}');
+    var route = '{{ route }}';
+    var shortDescription = '{{ short_description }}';
+    var startTime = '{{ start_time }}';
+    var estimatedDuration = '{{ estimated_duration }}';
+
+    // Initialize map
+    var map = L.map('map').setView([lat, lon], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(map);
+    
+    // Add marker to the map
+    L.marker([lat, lon]).addTo(map);
+
+    // Add route to the map
+    if (route.length > 0) {
+      var polyline = L.polyline(JSON.parse(route)).addTo(map);
+      map.fitBounds(polyline.getBounds());
+    }
+    
+    // Display Marker details
+    document.getElementById('short_description').innerHTML = shortDescription;
+    document.getElementById('start_time').innerHTML = startTime;
+    document.getElementById('estimated_duration').innerHTML = estimatedDuration;
+
+  </script>
+</body>
+</html>

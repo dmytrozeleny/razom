@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interactive Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <style>
+    #map{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    // Initialize map
+    var map = L.map('map').setView([0, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    var bounds = map.getBounds();
+    var neLat = bounds._northEast.lat;
+    var neLon = bounds._northEast.lng;
+
+    var swLat = bounds._southWest.lat;
+    var swLon = bounds._southWest.lng;
+    var zoom = map.getZoom()
+    var boundaries = {
+      'ne_lat' : neLat,
+      'ne_lon' : neLon,
+      'sw_lat' : swLat,
+      'sw_lon' : swLon,
+      'zoom' : zoom,
+      }
+
+    function updateMarkers() {
+      $.ajax({
+        type: 'POST',
+        url: '/markers',
+        contentType: 'application/json',
+        data: JSON.stringify(boundaries),
+        success: function(data) {
+          var markers = data.markers;
+          map.eachLayer(function(layer) {
+            if (layer instanceof L.Marker) {
+              map.removeLayer(layer);
+            }
+          });
+          if (markers.length > 0) {
+            for (var i = 0; i < Math.min(markers.length, 10); i++) {
+              var marker = markers[i];
+              L.marker([marker.lat, marker.lon]).addTo(map).bindPopup(
+                "<b>" + marker.title + "</b><br>" + 
+                "Description: " + marker.short_description + "<br>" +
+                "Starts at: " + marker.start_at + "<br>" +
+                "Estimated duration: " + marker.estimated_duration_minutes + " minutes" + "<br>" +
+                "Created by: " + marker.created_by + "<br>" +
+                "<a href='" + marker.details_url + "'>More details</a>"
+              );
+            }
+          }
+        },
+        error: function(error) {
+          console.log(error);
+        }
+      });
+    } 
+  
+    // Add markers initially
+    updateMarkers();
+    console.log('initial placement')
+
+    // Update markers, boundaries, and zoom level when map is moved or zoomed
+    function updateBoundsAndMarkers() {
+      var bounds = map.getBounds();
+      var neLat = bounds._northEast.lat;
+      var neLon = bounds._northEast.lng;
+      var swLat = bounds._southWest.lat;
+      var swLon = bounds._southWest.lng;
+      var zoom = map.getZoom();
+      boundaries = {
+        'ne_lat': neLat,
+        'ne_lon': neLon,
+        'sw_lat': swLat,
+        'sw_lon': swLon,
+        'zoom': zoom
+      };
+      updateMarkers();
+    }
+
+    map.on('moveend', updateBoundsAndMarkers);
+    // map.on('zoomend', updateBoundsAndMarkers);
+  </script>
+</body>
+</html>
