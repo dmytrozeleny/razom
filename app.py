@@ -2,13 +2,22 @@ from flask import Flask, render_template, jsonify, request, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.expression import func
 import os
+import random
+import string
+
+def get_random_string(length):
+    # choose from all lowercase letter
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
 
 database_url = os.getenv('DATABASE_URL')
 
 app = Flask(__name__)
 
-app.secret_key = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:w5MkULrRIquRYlh@localhost:5432/razom_db"
+app.secret_key = get_random_string(12)
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:w5MkULrRIquRYlh@localhost:5432/razom_db"
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://', 1)
 db = SQLAlchemy(app)
 
 class Marker(db.Model):
