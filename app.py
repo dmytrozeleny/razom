@@ -53,6 +53,7 @@ def get_route(marker):
 def generate_output(markers):
     return jsonify({'markers': [{'id' : marker['id'],
                                  'title': marker['title'],
+                                 'activity_type': marker['title'],
                                  'lat': marker['lat'],
                                  'lon': marker['lon'],
                                  'short_description':marker['short_description'],
